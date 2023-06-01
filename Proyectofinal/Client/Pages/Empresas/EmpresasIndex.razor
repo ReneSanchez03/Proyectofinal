@@ -1,0 +1,68 @@
+﻿@page "/empresas"
+@using Proyectofinal.Shared.Modelo;
+@inject HttpClient http
+@inject NavigationManager navegar
+
+<h3>Lista de empresas</h3>
+<button class="btn btn-primary" @onclick="Agregar"><span class="oi oi-plus"></span> Nueva empresa </button>
+
+@if (lasEmpresas==null)
+{
+    <h1>Cargando datos...</h1>
+}
+else if (lasEmpresas.Count==0)
+{
+    <h1>No existen empresas registradas </h1>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Direccion</th>
+                <th>Telefono</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var laEmpresa in lasEmpresas)
+            {
+                <tr>
+                    <td>@laEmpresa.Nombre</td>
+                    <td>@laEmpresa.Correo</td>
+                    <td>@laEmpresa.Direccion</td>
+                    <td>@laEmpresa.Telefono</td>
+                    <td>
+                        <button class="btn-sm" @onclick="(()=>Modificar(laEmpresa.Id))">Modificar</button>
+                        <button class="btn-sm" @onclick="(()=>Eliminar(laEmpresa))">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Empresa> lasEmpresas;
+
+    protected override async Task OnInitializedAsync()
+    {
+        lasEmpresas = await http.GetFromJsonAsync<List<Empresa>>("api/empresas");
+    }
+
+    private void Agregar() {
+        navegar.NavigateTo("/empresas/nueva");
+    }
+
+    private void Modificar(int id) {
+        navegar.NavigateTo($"/empresas/editar/{id}");
+    }
+
+    private async Task Eliminar(Empresa unaEmpresa)
+    {
+        await http.DeleteAsync($"api/empresas/{unaEmpresa.Id}");
+        lasEmpresas.Remove(unaEmpresa);
+    }
+}
